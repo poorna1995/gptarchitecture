@@ -223,17 +223,18 @@ print(f"Casual Attention Output Shape: {multi_attention_output.shape}")
 
 
 
-# # test with 2 bacthes
+# test with 2 bacthes
 
-# batch = torch.stack((input_embedding_output, input_embedding_output), dim=0)
+batch = torch.stack((input_embedding_output, input_embedding_output), dim=0).squeeze(1)
+print(batch.shape)
 
-# batch_size, seq_len, embed_dim = batch.shape
+batch_size, seq_len, embed_dim = batch.shape
 
 
-# multi_head_attention = MultiHeadAttention(embed_dim, out_dim ,seq_len,dropout, num_heads =2, qvk_bias = False)
-# multi_attention_output = multi_head_attention(input_embedding_output)
-# print(f"Casual Attention Output : {multi_attention_output}")
-# print(f"Casual Attention Output Shape: {multi_attention_output.shape}")
+multi_head_attention = MultiHeadAttention(embed_dim, out_dim ,seq_len,dropout, num_heads =2, qvk_bias = False)
+multi_attention_output = multi_head_attention(batch)
+print(f"multi_head_attention  Output : {multi_attention_output}")
+print(f"multi_head_attention Output Shape: {multi_attention_output.shape}")
 
 
 
