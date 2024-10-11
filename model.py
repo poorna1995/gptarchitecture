@@ -55,6 +55,21 @@ class InputEmbedding(nn.Module):
 
 
 
+
+class LayerNormalization(nn.Module):
+    def __init__(self, embed_dim):
+        super().__init__()
+        self.eps = 1e-5
+        self.scale = torch.ones(embed_dim)
+        self.shift = torch.zeros(embed_dim)
+    def forward(self,x):
+        mean = x.mean(dim=-1, keepdim =True) # (1,7,6)
+        variance = x.var(dim =-1, keepdim =True,unbiased = False)# (1,7,6)
+        layer_nom = x - mean // torch.sqrt(variance+self.eps ) # (1,7,6)
+        return self.scale*layer_nom + self.shift# (1,7,6)
+    
+
+
 class SelfAttention(nn.Module):
     def __init__(self, embed_dim, out_dim ,seq_len,dropout, qvk_bias = False):
         super().__init__()
@@ -195,6 +210,11 @@ input_embedding = InputEmbedding(text, vocab_size, embed_dim, dropout)
 
 input_embedding_output = input_embedding()
 print(f"Input Embedding Output : {input_embedding_output.shape}")
+
+
+layer_normalization= LayerNormalization(embed_dim)
+output_layer_normalization = layer_normalization(input_embedding_output)
+print(f"output_layer_normalization Output : {output_layer_normalization}")
 
 
 seq_len = input_embedding_output.shape[1]
