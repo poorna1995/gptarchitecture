@@ -185,8 +185,15 @@ class MultiHeadAttention(nn.Module):
 
 
 
-
-
+class FeedForward(nn.Module):
+    def __init__(self,embed_dim):
+       self.layers =  nn.Sequential(
+            nn.Linear(in_features = embed_dim, out_features = 4*embed_dim),
+            GELU(),
+            nn.Linear(in_features = 4*embed_dim, out_features = embed_dim),
+        )
+    def forward(self,x):
+        return self.layers(x)
 
 
 
@@ -216,7 +223,7 @@ print(f"Input Embedding Output : {input_embedding_output}")
 layer_normalization= LayerNormalization(embed_dim)
 output_layer_normalization = layer_normalization(input_embedding_output)
 print(f"output_layer_normalization Output : {output_layer_normalization}")
-print(output_layer_normalization.mean(dim=-1,keepdim =True, sci))
+print(output_layer_normalization.mean(dim=-1,keepdim =True))
 print(output_layer_normalization.var(dim=-1,keepdim =True,unbiased = False))
 
 
