@@ -86,6 +86,20 @@ Each transformer block consists of several components:
 - **Output**: Normalized embeddings (shape: `[batch_size, sequence_length, embedding_dimension]`)
 - **Description**: Normalizes the output of each sub-layer to stabilize and accelerate training.
 
+
+### Dropout
+
+- **Input**: Output from the previous layer (usually the feed-forward network)
+- **Output**: Regularized output (shape: `[batch_size, sequence_length, embedding_dimension]`)
+- **Description**: A regularization technique that randomly sets a fraction of input units to zero during training, helping prevent overfitting.
+
+### Skip Connection
+
+- **Input**: Output from the feed-forward network and the input to the transformer block
+- **Output**: Combined output (shape: `[batch_size, sequence_length, embedding_dimension]`)
+- **Description**: Adds the input of the transformer block to the output of the feed-forward network, allowing gradients to flow more easily during backpropagation.
+
+
 ### Output Layer
 
 - **Input**: Final contextualized embeddings from the last transformer block
