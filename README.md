@@ -1,4 +1,5 @@
-# GPT-Like Model Documentation
+# GPT Model
+
 
 ## Overview
 
