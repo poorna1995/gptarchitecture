@@ -20,7 +20,6 @@ This document provides a detailed description of a GPT-like model architecture, 
 4. [Hyperparameters](#hyperparameters)
 
 
-
 ## Architecture Overview
 
 The GPT-like model consists of:
@@ -72,7 +71,8 @@ Each transformer block consists of several components:
   - `K`: Key matrix
   - `V`: Value matrix
   - `attention_scores`: Attention weights calculated using softmax
-- **Description**: Computes attention scores to weigh the relevance of each token in the context of others, allowing the model to capture long-range dependencies.
+  - `context_weights`: The weighted sum of value vectors, representing the context for each token
+- **Description**: Computes attention scores to weigh the relevance of each token in the context of others, allowing the model to capture long-range dependencies. The context weights are calculated by multiplying the attention scores with the value matrix, yielding a weighted representation of the input tokens.
 
 #### Feed Forward Network
 
