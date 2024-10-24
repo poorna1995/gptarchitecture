@@ -57,9 +57,9 @@ class FeedForward(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.layers = nn.Sequential(
-            nn.Linear(in_features = cfg["emb_dim"], out_features = 4* cfg['emb_dim']),
+            nn.Linear(in_features = cfg["emb_dim"], out_features = 4* cfg['emb_dim']), # expansion
             GELU(),
-            nn.Linear(in_features =  4 * cfg["emb_dim"], out_features = cfg['emb_dim']),
+            nn.Linear(in_features =  4 * cfg["emb_dim"], out_features = cfg['emb_dim']), # contraction
               
         )
     def forward(self,x):
@@ -102,11 +102,67 @@ class TransformerBlock(nn.Module):
         x = x + shortcut
         return x
     
-    
+
+
+class GptModel(nn.Module):
+    def __init__(self,cfg):
+        super().__init__()
+        self.tok_emb = nn.Embedding(cfg["vocab_size"],cfg["emb_dim"])
+        self.pos_emb = nn.Embedding(cfg["context_length"], cfg["emb_dim"])
+        self.drop_emb = nn.Dropout(cfg["drop_rate"])
+        self.trf_blocks = nn.Sequential(
+            *[TransformerBlock(cfg) for _ in range(cfg["n_layers"])]
+        )
+        self.final_norm = LayerNorm(cfg["emb_dim"])
+        self.out_head = nn.Linear(
+            cfg["emb_dim"],
+            cfg['vocab_size'],
+            bias = False
+        )
+    def forward(self, input):
+        batch_size,seq_len = input.shape
+        tok_emb = self.tok_emb(input)
+        pos_emb = self.pos_emb(torch.arange(seq_len,device=input.device))
+        x = tok_emb + pos_emb
+        x = self.drop_emb(x)
+        x = self.trf_blocks(x)
+        x = self.final_norm(x)
+        logits = self.out_head(x)
+        return logits
+        
+
+
+
+
+
 torch.manual_seed(123)
-x = torch.rand(2,4,768)
-block = TransformerBlock(GPT_CONFIG_124M)
-output = block(x)
-print(output)
-print("Input shape:", x.shape)
-print("Output shape:", output.shape)
+
+import tiktoken
+tokenizer = tiktoken.get_encoding("gpt2")
+batch = []
+txt1 = "Every effort moves you"
+txt2 = "Every day holds a"
+batch.append(torch.tensor(tokenizer.encode(txt1)))
+batch.append(torch.tensor(tokenizer.encode(txt2)))
+batch = torch.stack(batch, dim=0)
+print(batch)
+
+model = GptModel(GPT_CONFIG_124M)
+logits = model(batch)
+print("Input batch:\n", batch)
+print("output batch:\n", logits.shape)
+print("output batch:\n",logits )
+
+
+predicted_next_tokens = torch.argmax(logits[:, -1, :], dim=-1)
+print(f"predicted token{predicted_next_tokens}")
+
+# Decode the predicted tokens back into words
+decoded_predictions = [tokenizer.decode([token_id.item()]) for token_id in predicted_next_tokens]
+
+print("Predicted next word for each sentence:")
+
+for i, prediction in enumerate(decoded_predictions):
+    print(f"Sentence {i+1} next word prediction: {txt1} + {prediction}")
+
+

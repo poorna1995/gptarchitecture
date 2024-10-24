@@ -26,17 +26,17 @@ class InputEmbedding(nn.Module):
         self.embed_dim = embed_dim
     
     # create an tensor with len of the tokens and dimensi
-        pe = torch.zeros(self.seq_len, self.embed_dim) 
+        pe = torch.zeros(self.seq_len, self.embed_dim) # (4,768)
         
   # tensor representing the positions of tokens in the input sequence.
-        position = torch.arange(0, self.seq_len, dtype = torch.float).unsqueeze(1)
+        position = torch.arange(0, self.seq_len, dtype = torch.float).unsqueeze(1) # (4,1)
         
    #calculating the values that will be used in the positional encoding of the input embeddings.
         div_term = torch.exp(torch.arange(0, self.embed_dim, 2).float() * (-math.log(10000.0) / self.embed_dim
                                                                            ))
 
     # calculating the sine positional encoding for even indices in the positional embedding tensor `pe`.
-        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 0::2] = torch.sin(position * div_term) # silce all the rows and silce the even colums
         
      # calculating the sine positional encoding for even indices in the positional embedding tensor `pe`.    
         pe[:, 1::2] = torch.cos(position * div_term)
@@ -74,20 +74,22 @@ class SelfAttention(nn.Module):
     def __init__(self, embed_dim, out_dim ,seq_len,dropout, qvk_bias = False):
         super().__init__()
         self.out_dim   = out_dim
-
-    
-        self.w_q = nn.Linear(in_features = embed_dim, out_features = out_dim, bias = qvk_bias) # (batch_size, embed_dim, outdim)
+     
+        self.w_q = nn.Linear(in_features = embed_dim, out_features = out_dim, bias = qvk_bias) # (batch_size, embed_dim, outdim) #(768,768)
+        
         self.w_k = nn.Linear(in_features = embed_dim, out_features = out_dim, bias = qvk_bias) # (batch_size, embed_dim, outdim)
+        print(self.w_q)
         self.w_v = nn.Linear(in_features = embed_dim, out_features = out_dim, bias = qvk_bias) # (batch_size, embed_dim, outdim)
+        print(self.w_q)
 
     def forward(self,x):
-        batch_size, seq_len, embed_dim = x.shape
+        batch_size, seq_len, embed_dim = x.shape # ( 1, 4, 768) @ (1, 768,10) --? ( 1,4,10)
             
         query = self.w_q(x) # (batch_size , seq_len, embed_dim) @(batch_size , embed_dim, out_dim) --->  (batch_size , seq_len, out_dim)
         key   = self.w_k(x) # (batch_size , seq_len, embed_dim) @(batch_size , embed_dim, out_dim) --->  (batch_size , seq_len, out_dim)
         value = self.w_v(x) # (batch_size , seq_len, embed_dim) @(batch_size , embed_dim, out_dim) --->  (batch_size , seq_len, out_dim)
     
-        attn_score = query @ key.transpose(1,2)            #(batch_size , seq_len, out_dim) @(batch_size , out_dim, seq_len) ----> (batch_size, seq_len, seq_len )
+        attn_score = query @ key.transpose(1,2)            #(batch_size , seq_len, out_dim) @(batch_size , out_dim, seq_len) ----> (batch_size, seq_len, seq_len ) #  ( 1, 4,10) ( 1, 4,10) -->(1,4,10) (1,10,4) --> (1,4,4)
         scaled_up  = attn_score/ math.sqrt(out_dim)
         attn_weight = torch.softmax(scaled_up, dim =-1)  
         contxt_vec = attn_weight@value                     #  (batch_size, seq_len, seq_len ) @ (batch_size , seq_len, out_dim)  ---> (batch_size, seq_len, out_dim )
@@ -259,6 +261,10 @@ batch = torch.stack((input_embedding_output, input_embedding_output), dim=0).squ
 print(batch.shape)
 
 batch_size, seq_len, embed_dim = batch.shape
+
+
+
+
 
 
 multi_head_attention = MultiHeadAttention(embed_dim, out_dim ,seq_len,dropout, num_heads =2, qvk_bias = False)
