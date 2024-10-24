@@ -41,7 +41,7 @@ The GPT-like model consists of:
 
 ### Input Layer
 
-- **Input**: Token IDs (e.g., `[102, 345, 67, 987]`)
+- **Input**: Token IDs
 - **Output**: Sequence of token IDs
 - **Description**: The input layer accepts tokenized text data represented as integer IDs.
 
