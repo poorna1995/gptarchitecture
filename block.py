@@ -24,7 +24,7 @@ from model import MultiHeadAttention
 
 GPT_CONFIG_124M={
     "vocab_size" : 50257,
-    "context_length" : 1024,
+    "context_length" : 4,
     "emb_dim": 768,
     "n_heads" : 12,
     "n_layers" : 12,
@@ -37,13 +37,13 @@ class LayerNorm(nn.Module):
     def __init__(self, emb_dim):
         super().__init__()
         self.eps = 1e-8
-        self.scale = nn.Parameter(torch.zeros(emb_dim))
+        self.scale = nn.Parameter(torch.ones(emb_dim))
         self.shift = nn.Parameter(torch.zeros(emb_dim))
     def forward( self, x):
         mean = x.mean(dim=-1, keepdim = True)
         var = x.var(dim =-1 , keepdim= True, unbiased = False)
         norm_x = (x-mean) / torch.sqrt(var+self.eps)
-        return (self.scale * norm_x )+ self.shift
+        return self.scale * norm_x + self.shift
     
 
 class GELU(nn.Module):
@@ -80,9 +80,9 @@ class TransformerBlock(nn.Module):
                                       dropout = cfg["drop_rate"],
                                       qvk_bias = cfg["qkv_bias"]
                                       )
-        self.ff = FeedForward(cfg),
-        self.norm1 = LayerNorm(cfg["emb_dim"]),
-        self.norm2 = LayerNorm(cfg["emb_dim"]),
+        self.ff = FeedForward(cfg)
+        self.norm1 = LayerNorm(cfg["emb_dim"])
+        self.norm2 = LayerNorm(cfg["emb_dim"])
         self.dropout_shortcut = nn.Dropout(cfg["drop_rate"])
                 
     
@@ -107,5 +107,6 @@ torch.manual_seed(123)
 x = torch.rand(2,4,768)
 block = TransformerBlock(GPT_CONFIG_124M)
 output = block(x)
+print(output)
 print("Input shape:", x.shape)
 print("Output shape:", output.shape)
