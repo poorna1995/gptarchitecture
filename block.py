@@ -465,21 +465,6 @@ def calc_loss_loader(data_loader, model, device, num_batches=None):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Note:
-# Uncommenting the following lines will allow the code to run on Apple Silicon chips, if applicable,
-# which is approximately 2x faster than on an Apple CPU (as measured on an M3 MacBook Air).
-# However, the resulting loss values may be slightly different.
-
-#if torch.cuda.is_available():
-#    device = torch.device("cuda")
-#elif torch.backends.mps.is_available():
-#    device = torch.device("mps")
-#else:
-#    device = torch.device("cpu")
-#
-# print(f"Using {device} device.")
-
-
 model.to(device) # no assignment model = model.to(device) necessary for nn.Module classes
 
 
